@@ -38,6 +38,7 @@ const ConversationPage = () => {
         content: values.prompt,
       };
       const newMessage = [...messages, userMessage];
+      console.log(newMessage);
 
       const res = await axios.post("/api/conversation", {
         messages: newMessage,
@@ -115,7 +116,7 @@ const ConversationPage = () => {
           {messages.length === 0 && !isLoading && (
             <Empty label="No Conversation Started" />
           )}
-          <div>
+          <div className="flex flex-col gap-y-4">
             {messages.map((message, index) => (
               <div
                 key={index}
@@ -127,7 +128,7 @@ const ConversationPage = () => {
                 )}
               >
                 {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
-                <p className="text-sm">{message?.content}</p>
+                <p className="text-sm">{message?.content || ""}</p>
               </div>
             ))}
           </div>

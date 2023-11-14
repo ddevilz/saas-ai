@@ -10,25 +10,23 @@ export async function POST(req: Request) {
   try {
     const { userId } = auth();
     const body = await req.json();
-    console.log(userId);
-
-    const { messages } = body;
+    const { prompt, amount = 1, resolution = "512x512" } = body;
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    if (!messages) {
-      return new NextResponse("Messages are required", { status: 400 });
+    if (!prompt) {
+      return new NextResponse("Prompt are required", { status: 400 });
     }
 
-    const completion = await openai.chat.completions.create({
-      messages,
-      model: "gpt-3.5-turbo",
+    const completion = await openai.images.generate({
+      prompt,
+      n: parseInt(amount, 10),
+      size: resolution,
     });
-    console.log(completion);
-    
-    return NextResponse.json(completion.choices[0].message);
+
+    return NextResponse.json(completion.data);
   } catch (error) {
     console.log(error);
     return new NextResponse("Internal Error", { status: 500 });

@@ -1,5 +1,7 @@
 "use client";
+
 import axios from "axios";
+import toast from "react-hot-toast";
 import * as z from "zod";
 import { MessageSquare, Music, VideoIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -18,8 +20,10 @@ import Loader from "@/components/loader";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/userAvatar";
 import BotAvatar from "@/components/botAvatar";
+import { useProModal } from "@/hooks/useProModal";
 
 const MusicPage = () => {
+  const proModal = useProModal();
   const router = useRouter();
   const [video, setVideo] = useState<string>();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -41,8 +45,11 @@ const MusicPage = () => {
 
       form.reset();
     } catch (error: any) {
-      // TODO: open pro modal
-      console.log(error);
+      if (error?.response?.status === 403) {
+        proModal.onOpen();
+      }else {
+        toast.error("Something went wrong.")
+      }
     } finally {
       router.refresh();
     }

@@ -1,4 +1,5 @@
 "use client";
+import toast from "react-hot-toast";
 import axios from "axios";
 import * as z from "zod";
 import { Download, ImageIcon } from "lucide-react";
@@ -25,8 +26,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardFooter } from "@/components/ui/card";
+import { useProModal } from "@/hooks/useProModal";
 
 const ImagePage = () => {
+  const proModal = useProModal();
   const router = useRouter();
   const [images, setImages] = useState<string[]>([]);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -52,8 +55,11 @@ const ImagePage = () => {
 
       form.reset();
     } catch (error: any) {
-      // TODO: open pro modal
-      console.log(error);
+      if (error?.response?.status === 403) {
+        proModal.onOpen();
+      }else {
+        toast.error("Something went wrong.")
+      }
     } finally {
       router.refresh();
     }
@@ -181,7 +187,11 @@ const ImagePage = () => {
                   <Image fill alt="Image" src={src} />
                 </div>
                 <CardFooter className="p-2">
-                  <Button variant="secondary" className="w-full" onClick={() => window.open(src)}>
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => window.open(src)}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>

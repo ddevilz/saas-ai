@@ -2,6 +2,8 @@ import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { checkApiLimit, increaseApiLimit } from "@/lib/apiLimit";
+import { checkSubscription } from "@/lib/subscription";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -26,12 +28,22 @@ export async function POST(req: Request) {
     if (!messages) {
       return new NextResponse("Messages are required", { status: 400 });
     }
-    console.log("response");
+
+    const freeTrial = await checkApiLimit();
+    const isPro = await checkSubscription();
+
+    if (!freeTrial && !isPro) {
+      return new NextResponse("Free Trial has expired", { status: 403 });
+    }
+
     const res = await openai.chat.completions.create({
       messages: [instructionMessage, ...messages],
       model: "gpt-3.5-turbo",
     });
-    console.log(res);
+
+    if (!isPro) {
+      await increaseApiLimit();
+    }
 
     return NextResponse.json(res.choices[0].message);
   } catch (error) {

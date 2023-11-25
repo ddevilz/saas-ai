@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     const subscription = await stripe.subscriptions.retrieve(
       session.subscription as string
     );
-
+      
     await prisma.userSubscription.update({
       where: {
         stripeSubscriptionId: subscription.id,
